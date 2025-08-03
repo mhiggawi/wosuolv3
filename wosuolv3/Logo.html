@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شعار وصول الفعلي - Real Wosuol Logo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center;
+            align-items: center;
+            padding: 20px; 
+        }
+        
+        .wosuol-logo-real {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            margin: 20px;
+        }
+        
+        .wosuol-logo-real:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+        
+        .wosuol-icon-real {
+            width: 45px;
+            height: 45px;
+            background: #4f46e5;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+        }
+        
+        .wosuol-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .wosuol-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e40af;
+            line-height: 1.2;
+        }
+        
+        .wosuol-subtitle {
+            font-size: 0.75rem;
+            color: #6b7280;
+            font-weight: 400;
+            line-height: 1.2;
+        }
+        
+        .logo-versions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        .logo-variant {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .download-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #4f46e5, #3b82f6);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+        }
+        
+        .large-variant {
+            transform: scale(1.3);
+            margin: 20px 0;
+        }
+        
+        .vertical-variant {
+            flex-direction: column;
+            text-align: center;
+            gap: 8px;
+        }
+        
+        .icon-only {
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+            margin: 0 auto;
+        }
+        
+        .english-variant .wosuol-title {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .english-variant .wosuol-subtitle {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-3xl font-bold text-white mb-8 text-center">الشعار الفعلي لوصول - Real Wosuol Logo</h1>
+    <p class="text-white mb-8 text-center opacity-90">مطابق للشعار المستخدم في الموقع الفعلي</p>
+    
+    <div class="logo-versions">
+        <!-- الشعار الأساسي الأفقي (كما في الموقع) -->
+        <div class="logo-variant">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">الشعار الأساسي - كما في الموقع</h3>
+            <div class="wosuol-logo-real">
+                <div class="wosuol-icon-real">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="wosuol-text">
+                    <div class="wosuol-title">وصول</div>
+                    <div class="wosuol-subtitle">نظام إدارة الفعاليات والدعوات</div>
+                </div>
+            </div>
+            <button class="download-btn" onclick="downloadRealLogo('horizontal', 'standard')">تحميل PNG</button>
+        </div>
+
+        <!-- النسخة الكبيرة -->
+        <div class="logo-variant">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">النسخة الكبيرة</h3>
+            <div class="wosuol-logo-real large-variant">
+                <div class="wosuol-icon-real" style="width: 60px; height: 60px; font-size: 1.8rem;">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="wosuol-text">
+                    <div class="wosuol-title" style="font-size: 2rem;">وصول</div>
+                    <div class="wosuol-subtitle" style="font-size: 1rem;">نظام إدارة الفعاليات والدعوات</div>
+                </div>
+            </div>
+            <button class="download-btn" onclick="downloadRealLogo('horizontal', 'large')">تحميل PNG</button>
+        </div>
+
+        <!-- النسخة العمودية -->
+        <div class="logo-variant">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">النسخة العمودية</h3>
+            <div class="wosuol-logo-real vertical-variant">
+                <div class="wosuol-icon-real">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="wosuol-text">
+                    <div class="wosuol-title">وصول</div>
+                    <div class="wosuol-subtitle">نظام إدارة الفعاليات والدعوات</div>
+                </div>
+            </div>
+            <button class="download-btn" onclick="downloadRealLogo('vertical', 'standard')">تحميل PNG</button>
+        </div>
+
+        <!-- الأيقونة فقط -->
+        <div class="logo-variant">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">الأيقونة فقط</h3>
+            <div class="wosuol-icon-real icon-only">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <button class="download-btn" onclick="downloadRealLogo('icon', 'only')">تحميل PNG</button>
+        </div>
+
+        <!-- النسخة الإنجليزية -->
+        <div class="logo-variant">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">النسخة الإنجليزية</h3>
+            <div class="wosuol-logo-real english-variant" dir="ltr">
+                <div class="wosuol-icon-real">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="wosuol-text">
+                    <div class="wosuol-title">Wosuol</div>
+                    <div class="wosuol-subtitle">Event & Invitation Management System</div>
+                </div>
+            </div>
+            <button class="download-btn" onclick="downloadRealLogo('english', 'standard')">تحميل PNG</button>
+        </div>
+
+        <!-- نسخة بدون خلفية -->
+        <div class="logo-variant">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">نسخة شفافة</h3>
+            <div class="wosuol-logo-real" style="background: transparent; box-shadow: none; border: 2px dashed #ccc;">
+                <div class="wosuol-icon-real">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="wosuol-text">
+                    <div class="wosuol-title">وصول</div>
+                    <div class="wosuol-subtitle">نظام إدارة الفعاليات والدعوات</div>
+                </div>
+            </div>
+            <button class="download-btn" onclick="downloadRealLogo('transparent', 'standard')">تحميل PNG شفاف</button>
+        </div>
+    </div>
+
+    <div class="mt-12 text-center text-white">
+        <p class="mb-2">🎨 <strong>ألوان الشعار:</strong></p>
+        <div class="flex justify-center gap-4 mb-4">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-indigo-600 rounded-lg mx-auto mb-2"></div>
+                <p class="text-sm">#4f46e5<br>الأيقونة</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-700 rounded-lg mx-auto mb-2"></div>
+                <p class="text-sm">#1e40af<br>النص الرئيسي</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-gray-500 rounded-lg mx-auto mb-2"></div>
+                <p class="text-sm">#6b7280<br>النص الفرعي</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function downloadRealLogo(type, variant) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            let width, height;
+            switch(type) {
+                case 'horizontal':
+                case 'english':
+                case 'transparent':
+                    width = variant === 'large' ? 600 : 400;
+                    height = variant === 'large' ? 150 : 100;
+                    break;
+                case 'vertical':
+                    width = 250;
+                    height = 200;
+                    break;
+                case 'icon':
+                    width = 120;
+                    height = 120;
+                    break;
+                default:
+                    width = 400;
+                    height = 100;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Draw background (except for transparent)
+            if (type !== 'transparent') {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, width, height);
+            }
+            
+            // Calculate sizes
+            const iconSize = variant === 'large' ? 60 : 45;
+            const titleSize = variant === 'large' ? 32 : 24;
+            const subtitleSize = variant === 'large' ? 14 : 10;
+            
+            if (type === 'icon') {
+                // Draw only icon
+                const iconX = (width - iconSize * 1.5) / 2;
+                const iconY = (height - iconSize * 1.5) / 2;
+                const iconSizeAdjusted = iconSize * 1.5;
+                
+                // Icon background
+                ctx.fillStyle = '#4f46e5';
+                roundRect(ctx, iconX, iconY, iconSizeAdjusted, iconSizeAdjusted, 8);
+                ctx.fill();
+                
+                // Icon symbol
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `${iconSizeAdjusted * 0.5}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('✓', iconX + iconSizeAdjusted/2, iconY + iconSizeAdjusted/2);
+                
+            } else if (type === 'vertical') {
+                // Vertical layout
+                const iconX = (width - iconSize) / 2;
+                const iconY = 30;
+                
+                // Icon
+                ctx.fillStyle = '#4f46e5';
+                roundRect(ctx, iconX, iconY, iconSize, iconSize, 8);
+                ctx.fill();
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `${iconSize * 0.5}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('✓', iconX + iconSize/2, iconY + iconSize/2);
+                
+                // Text
+                ctx.fillStyle = '#1e40af';
+                ctx.font = `bold ${titleSize}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText(type === 'english' ? 'Wosuol' : 'وصول', width/2, iconY + iconSize + 35);
+                
+                ctx.fillStyle = '#6b7280';
+                ctx.font = `${subtitleSize}px Arial`;
+                const subText = type === 'english' ? 'Event & Invitation Management' : 'نظام إدارة الفعاليات والدعوات';
+                ctx.fillText(subText, width/2, iconY + iconSize + 55);
+                
+            } else {
+                // Horizontal layout
+                const iconX = 20;
+                const iconY = (height - iconSize) / 2;
+                const textX = iconX + iconSize + 15;
+                const textY = height / 2;
+                
+                // Icon
+                ctx.fillStyle = '#4f46e5';
+                roundRect(ctx, iconX, iconY, iconSize, iconSize, 8);
+                ctx.fill();
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `${iconSize * 0.5}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('✓', iconX + iconSize/2, iconY + iconSize/2);
+                
+                // Main text
+                ctx.fillStyle = '#1e40af';
+                ctx.font = `bold ${titleSize}px Arial`;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                const mainText = type === 'english' ? 'Wosuol' : 'وصول';
+                ctx.fillText(mainText, textX, textY - 8);
+                
+                // Subtitle
+                ctx.fillStyle = '#6b7280';
+                ctx.font = `${subtitleSize}px Arial`;
+                const subText = type === 'english' ? 'Event & Invitation Management System' : 'نظام إدارة الفعاليات والدعوات';
+                ctx.fillText(subText, textX, textY + 12);
+            }
+            
+            // Download
+            const link = document.createElement('a');
+            link.download = `wosuol-real-logo-${type}-${variant}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+    </script>
+</body>
+</html>

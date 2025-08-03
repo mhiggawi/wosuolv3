@@ -1,0 +1,677 @@
+{
+  "name": "send whatsapp using custom request",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "send-invitations",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "8aaec0e9-960f-4404-bf1e-eb23d491b964",
+      "name": "1. Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -820,
+        -260
+      ],
+      "webhookId": "send-invitations"
+    },
+    {
+      "parameters": {},
+      "id": "ede60adf-6872-4eaf-a041-8bc57d3cfdae",
+      "name": "1b. Manual Test Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -840,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// كود للعقدة \"2. Process Webhook Data\" - تشخيص مفصل لـ Switch\nconst webhookData = $json.body || $json;\n\n// تسجيل البيانات الخام\nconsole.log('=== RAW DATA ANALYSIS ===');\nconsole.log('$json keys:', Object.keys($json));\nconsole.log('$json.body exists:', !!$json.body);\nconsole.log('webhookData keys:', Object.keys(webhookData || {}));\n\n// للاختبار اليدوي\nif (!webhookData || Object.keys(webhookData).length === 0) {\n  console.log('🧪 Manual test - using default data');\n  return [{\n    json: {\n      action: 'send_event_all', // غيّر هذا للاختبار: send_selected, send_event_all, send_global_all\n      eventId: 1,\n      guestIds: [1, 2, 3],\n      timestamp: Date.now(),\n      isTest: true,\n      debugInfo: 'Manual test execution'\n    }\n  }];\n}\n\n// استخراج البيانات مع تشخيص مفصل\nconst rawAction = webhookData.action || $json.action;\nconsole.log('=== ACTION ANALYSIS ===');\nconsole.log('Raw action value:', JSON.stringify(rawAction));\nconsole.log('Action type:', typeof rawAction);\nconsole.log('Action length:', rawAction ? rawAction.length : 'undefined');\n\n// تنظيف Action\nlet action = rawAction;\nif (typeof action === 'string') {\n  action = action.trim().toLowerCase();\n  console.log('Cleaned action:', JSON.stringify(action));\n}\n\n// تحليل Event ID\nconst rawEventId = webhookData.event_id || $json.event_id;\nconst eventId = parseInt(rawEventId) || null;\nconsole.log('=== EVENT ID ANALYSIS ===');\nconsole.log('Raw event_id:', JSON.stringify(rawEventId));\nconsole.log('Parsed eventId:', eventId);\n\n// تحليل Guest IDs\nconst rawGuestIds = webhookData.guest_ids || $json.guest_ids;\nlet guestIds = [];\nif (Array.isArray(rawGuestIds)) {\n  guestIds = rawGuestIds.map(id => parseInt(id)).filter(id => !isNaN(id));\n}\nconsole.log('=== GUEST IDS ANALYSIS ===');\nconsole.log('Raw guest_ids:', JSON.stringify(rawGuestIds));\nconsole.log('Parsed guestIds:', guestIds);\n\n// التحقق من صحة Action\nconst validActions = ['send_global_all', 'send_event_all', 'send_selected'];\nconsole.log('=== ACTION VALIDATION ===');\nconsole.log('Valid actions:', validActions);\nconsole.log('Action matches send_selected:', action === 'send_selected');\nconsole.log('Action matches send_event_all:', action === 'send_event_all');\nconsole.log('Action matches send_global_all:', action === 'send_global_all');\n\nif (!validActions.includes(action)) {\n  console.error('❌ INVALID ACTION DETECTED!');\n  console.log('Received action:', action);\n  console.log('Expected one of:', validActions);\n  \n  // محاولة إصلاح Action شائعة\n  if (action.includes('global')) {\n    action = 'send_global_all';\n    console.log('🔧 Auto-corrected to:', action);\n  } else if (action.includes('event')) {\n    action = 'send_event_all';\n    console.log('🔧 Auto-corrected to:', action);\n  } else if (action.includes('selected')) {\n    action = 'send_selected';\n    console.log('🔧 Auto-corrected to:', action);\n  } else {\n    throw new Error(`❌ Unknown action: ${action}`);\n  }\n}\n\n// التحقق من المتطلبات\nconsole.log('=== REQUIREMENTS CHECK ===');\nif ((action === 'send_event_all' || action === 'send_selected') && !eventId) {\n  console.error('❌ Event ID required for action:', action);\n  throw new Error('❌ Event ID مطلوب لهذا النوع من الإرسال');\n}\n\nif (action === 'send_selected' && guestIds.length === 0) {\n  console.error('❌ Guest IDs required for send_selected');\n  throw new Error('❌ Guest IDs مطلوبة للإرسال المحدد');\n}\n\n// إنشاء النتيجة النهائية\nconst result = {\n  action: action,\n  eventId: eventId,\n  guestIds: guestIds,\n  timestamp: Date.now(),\n  isGlobal: action === 'send_global_all',\n  isEventSpecific: action === 'send_event_all',\n  isSelectedGuests: action === 'send_selected',\n  validationPassed: true,\n  processedAt: new Date().toISOString(),\n  debugInfo: {\n    rawAction: rawAction,\n    rawEventId: rawEventId,\n    rawGuestIds: rawGuestIds,\n    source: webhookData ? 'webhook' : 'manual'\n  }\n};\n\nconsole.log('=== FINAL RESULT FOR SWITCH ===');\nconsole.log('Result object:', JSON.stringify(result, null, 2));\nconsole.log('Switch will receive action:', result.action);\nconsole.log('Expected Switch path:');\nif (result.action === 'send_selected') {\n  console.log('  → Output 0 → 4c. Get Selected Guests');\n} else if (result.action === 'send_event_all') {\n  console.log('  → Output 1 → 4b. Get Event Specific Guests');\n} else if (result.action === 'send_global_all') {\n  console.log('  → Output 2 → 4a. Get All Pending Guests');\n}\nconsole.log('Action type check:', typeof $json.action);\nconsole.log('Action value check:', JSON.stringify($json.action));\nconsole.log('Action strict equals send_event_all:', $json.action === 'send_event_all');\nreturn [{ json: result }];"
+      },
+      "id": "fbb07640-7811-45fa-a8b0-dd65d9f5b1f2",
+      "name": "2. Process Webhook Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -500,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n    g.id as guest_db_id,\n    g.guest_id, \n    g.name_ar, \n    g.phone_number,\n    g.status,\n    g.event_id,\n    e.whatsapp_image_url,\n    e.Maps_link as google_maps_link,\n    e.event_date_ar,\n    e.venue_ar,\n    e.event_name,\n    e.bride_name_ar,\n    e.groom_name_ar\nFROM guests g\nJOIN events e ON g.event_id = e.id\nWHERE g.status = 'pending'\nORDER BY g.name_ar ASC",
+        "options": {}
+      },
+      "id": "caccbaa3-dbd7-4961-917f-6b653e462074",
+      "name": "4a. Get All Pending Guests",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.4,
+      "position": [
+        80,
+        280
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "vSeJNZf8qyBp38oG",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n    g.id as guest_db_id,\n    g.guest_id, \n    g.name_ar, \n    g.phone_number,\n    g.status,\n    g.event_id,\n    e.whatsapp_image_url,\n    e.Maps_link as google_maps_link,\n    e.event_date_ar,\n    e.venue_ar,\n    e.event_name,\n    e.bride_name_ar,\n    e.groom_name_ar\nFROM guests g\nJOIN events e ON g.event_id = e.id\nWHERE g.event_id = {{ $json.eventId }} \n  AND g.status = 'pending'\nORDER BY g.name_ar ASC",
+        "options": {}
+      },
+      "id": "24ff145f-8063-46dd-880a-3e29c02c942a",
+      "name": "4b. Get Event Specific Guests",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.4,
+      "position": [
+        80,
+        80
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "mySql": {
+          "id": "vSeJNZf8qyBp38oG",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- إصلاح SQL Query في عقدة \"4c. Get Selected Guests\"\n\n-- Query الصحيح:\nSELECT \n    g.id as guest_db_id,\n    g.guest_id, \n    g.name_ar, \n    g.phone_number,\n    g.status,\n    g.event_id,\n    e.whatsapp_image_url,\n    e.Maps_link as google_maps_link,\n    e.event_date_ar,\n    e.venue_ar,\n    e.event_name,\n    e.bride_name_ar,\n    e.groom_name_ar\nFROM guests g\nJOIN events e ON g.event_id = e.id\nWHERE g.id IN ({{ $json.guestIds.join(',') }}) \n  AND g.event_id = {{ $json.eventId }}\nORDER BY g.name_ar ASC\n\n-- تأكد من أن:\n-- 1. $json.guestIds موجود وهو array\n-- 2. $json.eventId موجود وهو number",
+        "options": {}
+      },
+      "id": "f1bbc4b1-8920-40a8-9d1c-58bb4ff4dcac",
+      "name": "4c. Get Selected Guests",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.4,
+      "position": [
+        80,
+        -140
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "vSeJNZf8qyBp38oG",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// تجهيز رسائل الدعوة مع الصور والروابط المخصصة\nconst items = [];\nconst projectBaseUrl = 'https://wosuol.com';\nconst rsvpWebPageUrl = `${projectBaseUrl}/rsvp.php`;\n\n// الحصول على بيانات الضيوف من المسار المحدد\nconst guestData = $input.all();\nlet messageCount = 0;\nlet skippedCount = 0;\n\nconsole.log(`📋 تجهيز رسائل الدعوة:`);\nconsole.log(`- عدد الضيوف المستلمين: ${guestData.length}`);\n\nfor (const item of guestData) {\n  const guest = item.json;\n  \n  // استخراج بيانات الضيف\n  const guestName = guest.name_ar || 'ضيف كريم';\n  const phoneNumber = guest.phone_number;\n  const guestId = guest.guest_id;\n  const guestDbId = guest.guest_db_id;\n  const imagePath = item.json.whatsapp_image_url;\n  const mapsLink = guest.google_maps_link;\n  const eventDate = guest.event_date_ar;\n  const venue = guest.venue_ar;\n  const eventName = guest.event_name || 'حفل زفاف';\n  const brideName = guest.bride_name_ar;\n  const groomName = guest.groom_name_ar;\n  const eventId = guest.event_id;\n\n  // تخطي الضيوف بدون أرقام هواتف صحيحة\n  if (!phoneNumber || phoneNumber.trim() === '' || phoneNumber === 'N/A') {\n    console.log(`⚠️ تخطي الضيف ${guestName} - لا يوجد رقم هاتف صحيح`);\n    skippedCount++;\n    continue;\n  }\n\n  // تنسيق رقم الهاتف\n  let formattedPhone = phoneNumber.toString().trim();\n  formattedPhone = formattedPhone.replace(/[^+0-9]/g, '');\n  \n  if (!formattedPhone.startsWith('+')) {\n    if (formattedPhone.startsWith('00')) {\n      formattedPhone = '+' + formattedPhone.substring(2);\n    } else if (formattedPhone.startsWith('0')) {\n      formattedPhone = '+962' + formattedPhone.substring(1);\n    } else if (formattedPhone.length === 9) {\n      formattedPhone = '+962' + formattedPhone;\n    } else {\n      formattedPhone = '+' + formattedPhone;\n    }\n  }\n\n  if (formattedPhone.length < 10) {\n    console.log(`⚠️ تخطي الضيف ${guestName} - رقم هاتف قصير: ${formattedPhone}`);\n    skippedCount++;\n    continue;\n  }\n\n  // تجهيز رابط الصورة\n  let fullImageUrl = null;\n  if (imagePath && imagePath.trim() !== '' && imagePath !== 'NULL') {\n    const cleanImagePath = imagePath.startsWith('./') ? imagePath.substring(2) : imagePath;\n    fullImageUrl = `${projectBaseUrl}/${cleanImagePath}`;\n  }\n\n  // رابط الدعوة المخصص\n  const inviteLink = `${rsvpWebPageUrl}?id=${guestId}`;\n\n  // تجهيز نص الرسالة\n  let messageBody = ` مرحباً ${guestName}،\\n\\n`;\n  \n  if (brideName && groomName && \n      brideName !== 'يرجى التحديث من لوحة التحكم' && \n      groomName !== 'يرجى التحديث من لوحة التحكم') {\n    messageBody += `نتشرف بدعوتكم لحضور حفل \\n💕 ${brideName} & ${groomName} 💕\\n\\n`;\n  } else {\n    messageBody += `نتشرف بدعوتكم لحضور ${eventName}\\n\\n`;\n  }\n  \n  if (eventDate && eventDate.trim() !== '' && eventDate !== 'يرجى التحديث من لوحة التحكم') {\n    messageBody += `📅 التاريخ: ${eventDate}\\n`;\n  }\n  \n  if (venue && venue.trim() !== '' && venue !== 'يرجى التحديث من لوحة التحكم') {\n    messageBody += `📍 المكان: ${venue}\\n\\n`;\n  } else {\n    messageBody += `\\n`;\n  }\n  \n  if (mapsLink && mapsLink.trim() !== '' && \n      mapsLink !== 'يرجى التحديث من لوحة التحكم' &&\n      mapsLink.includes('maps.google')) {\n    messageBody += `🗺️ للوصول إلى الموقع:\\n${mapsLink}\\n\\n`;\n  }\n  \n  messageBody += `🔗 رابط دعوتك الشخصية:\\n${inviteLink}\\n\\n`;\n  //messageBody += `نتطلع لرؤيتكم معنا! 💖\\n\\n`;\n  messageBody += `*وصول*\nنظام إدارة الفعاليات والدعوات\nللمساعده التواصل على :962799121049`;\n\n  messageCount++;\n  \n  items.push({\n    json: {\n      phoneNumber: formattedPhone,\n      originalPhone: phoneNumber,\n      messageBody: messageBody,\n      invitationImageUrl: fullImageUrl,\n      guestName: guestName,\n      guestId: guestId,\n      guestDbId: guestDbId,\n      eventName: eventName,\n      eventId: eventId,\n      messageIndex: messageCount,\n      inviteLink: inviteLink,\n      hasImage: !!fullImageUrl,\n      preparedAt: new Date().toISOString()\n    }\n  });\n}\n\nconsole.log(`✅ تم تجهيز ${messageCount} رسالة للإرسال`);\nconsole.log(`⚠️ تم تخطي ${skippedCount} ضيف`);\n\nif (items.length === 0) {\n  throw new Error('❌ لا يوجد ضيوف صالحين للإرسال');\n}\n\nreturn items;"
+      },
+      "id": "1527d580-ef85-4fa6-bf37-c580c5a1a004",
+      "name": "5. Prepare Invitation Messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.invitationImageUrl }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "6316d8d9-7780-49d9-adc8-1ea1ee4b43c0",
+      "name": "6. Check if Image Exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        740,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ultramsg.com/instance133655/messages/image",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "sc0ebktt9wq9rmvm"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "to",
+              "value": "={{ $json.phoneNumber }}"
+            },
+            {
+              "name": "image",
+              "value": "={{ $json.invitationImageUrl }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $json.messageBody }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "306bc781-1047-41a6-8d90-e180b745344e",
+      "name": "7a. Send WhatsApp with Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ultramsg.com/instance133655/messages/chat",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "sc0ebktt9wq9rmvm"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "to",
+              "value": "={{ $json.phoneNumber }}"
+            },
+            {
+              "name": "body",
+              "value": "={{ $json.messageBody }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "47f9c141-b9b9-4f1b-a681-06d1d809cab4",
+      "name": "7b. Send WhatsApp Text Only",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "seconds"
+      },
+      "id": "80651ecb-421a-4c2b-bc96-f31629ef458b",
+      "name": "8. Delay Between Messages",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        1220,
+        100
+      ],
+      "webhookId": "163d3f41-13fe-4123-8138-daeaa9674108"
+    },
+    {
+      "parameters": {
+        "jsCode": "// كود محسّن لعقدة \"9. Process Send Result\"\n\n// الحصول على نتيجة الإرسال\nconst sendResult = $json;\n\n// محاولة الحصول على معلومات الضيف من العقد السابقة\nlet guestInfo = null;\n\n// جرب الحصول على بيانات الضيف من عقدة Check Image\ntry {\n  guestInfo = $('6. Check if Image Exists').item.json;\n} catch (error) {\n  console.log('Could not get guest info from Check Image node, trying alternative...');\n}\n\n// إذا لم نجد البيانات، جرب من عقدة أخرى\nif (!guestInfo) {\n  try {\n    guestInfo = $('5. Prepare Invitation Messages').item.json;\n  } catch (error) {\n    console.log('Could not get guest info from Prepare Messages node');\n  }\n}\n\n// تسجيل للتشخيص\nconsole.log('=== PROCESS SEND RESULT DEBUG ===');\nconsole.log('Send result:', JSON.stringify(sendResult, null, 2));\nconsole.log('Guest info:', JSON.stringify(guestInfo, null, 2));\n\n// التحقق من وجود البيانات المطلوبة\nif (!guestInfo) {\n  console.error('❌ Guest info not found!');\n  // استخدم بيانات افتراضية لتجنب الخطأ\n  guestInfo = {\n    guestId: 'unknown',\n    guestDbId: 0,\n    guestName: 'Unknown Guest',\n    phoneNumber: 'unknown',\n    eventId: 0,\n    messageIndex: 0,\n    hasImage: false\n  };\n}\n\n// تحديد نجاح الإرسال\nconst successStatuses = ['200', 200, 'true', true];\nconst wasSent = successStatuses.includes(sendResult.sent) || \n                successStatuses.includes(sendResult.status) || \n                successStatuses.includes(sendResult.statusCode) ||\n                (sendResult.id && sendResult.id !== '');\n\n// تسجيل النتيجة\nif (wasSent) {\n  console.log(`✅ تم إرسال الرسالة للضيف ${guestInfo.guestName} (${guestInfo.phoneNumber})`);\n} else {\n  console.log(`❌ فشل إرسال الرسالة للضيف ${guestInfo.guestName} (${guestInfo.phoneNumber})`);\n  console.log('تفاصيل الخطأ:', JSON.stringify(sendResult, null, 2));\n}\n\nconst result = {\n  guestId: guestInfo.guestId || 'unknown',\n  guestDbId: guestInfo.guestDbId || 0,\n  guestName: guestInfo.guestName || 'Unknown Guest',\n  phoneNumber: guestInfo.phoneNumber || 'unknown',\n  eventId: guestInfo.eventId || 0,\n  wasSent: wasSent,\n  sendResponse: sendResult,\n  sentAt: new Date().toISOString(),\n  messageIndex: guestInfo.messageIndex || 0,\n  hasImage: guestInfo.hasImage || false,\n  errorMessage: wasSent ? null : (sendResult.error || sendResult.message || 'Unknown error')\n};\n\nconsole.log('=== RESULT FOR DATABASE UPDATE ===');\nconsole.log('Guest DB ID:', result.guestDbId);\nconsole.log('Was sent:', result.wasSent);\nconsole.log('Full result:', JSON.stringify(result, null, 2));\n\nreturn [{ json: result }];"
+      },
+      "id": "8eff4216-0872-4994-8605-e29ad3805a02",
+      "name": "9. Process Send Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1460,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE guests SET \n  last_invite_sent = NOW(),\n  invite_count = COALESCE(invite_count, 0) + 1,\n  last_invite_status = CASE \n    WHEN {{ $json.wasSent || false }} = true THEN 'sent'\n    ELSE 'failed'\n  END\nWHERE id = {{ $json.guestDbId || 0 }}\n  AND {{ $json.guestDbId || 0 }} > 0",
+        "options": {}
+      },
+      "id": "afba1e45-2148-4492-80f2-0efcf4d66315",
+      "name": "10. Update Send Log in Database",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.4,
+      "position": [
+        1680,
+        100
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "vSeJNZf8qyBp38oG",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "7de1b1c2-75e0-4ef9-b2ae-a1d6986b2205",
+      "name": "11. Aggregate All Results",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1960,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// تجميع جميع النتائج وإنشاء تقرير شامل\nconst allResults = $json.data;\nlet successCount = 0;\nlet failureCount = 0;\nconst successGuests = [];\nconst failedGuests = [];\nconst eventIds = new Set();\n\nconsole.log('📊 تجميع النتائج النهائية:');\nconsole.log(`- عدد النتائج المعالجة: ${allResults.length}`);\n\nfor (const result of allResults) {\n  eventIds.add(result.eventId);\n  \n  if (result.wasSent) {\n    successCount++;\n    successGuests.push({\n      name: result.guestName,\n      phone: result.phoneNumber,\n      guestId: result.guestId,\n      eventId: result.eventId,\n      sentAt: result.sentAt,\n      hasImage: result.hasImage\n    });\n  } else {\n    failureCount++;\n    failedGuests.push({\n      name: result.guestName,\n      phone: result.phoneNumber,\n      guestId: result.guestId,\n      eventId: result.eventId,\n      error: result.errorMessage\n    });\n  }\n}\n\nconst totalProcessed = successCount + failureCount;\nconst successRate = totalProcessed > 0 ? Math.round((successCount / totalProcessed) * 100) : 0;\n\nconst finalReport = {\n  success: true,\n  message: `تم إرسال ${successCount} رسالة بنجاح من أصل ${totalProcessed} (${successRate}%)`,\n  summary: {\n    totalProcessed: totalProcessed,\n    successCount: successCount,\n    failureCount: failureCount,\n    successRate: successRate,\n    eventsAffected: Array.from(eventIds).length,\n    eventIds: Array.from(eventIds)\n  },\n  details: {\n    successfulSends: successGuests,\n    failedSends: failedGuests,\n    processedAt: new Date().toISOString()\n  }\n};\n\nconsole.log('✅ تقرير الإرسال النهائي:');\nconsole.log(`- إجمالي المعالج: ${totalProcessed}`);\nconsole.log(`- نجح: ${successCount}`);\nconsole.log(`- فشل: ${failureCount}`);\nconsole.log(`- معدل النجاح: ${successRate}%`);\n\nreturn [{ json: finalReport }];"
+      },
+      "id": "2ea3b2cf-373c-4ee6-b2b1-4c56152786a2",
+      "name": "12. Generate Final Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "3e3bb39c-1772-44a2-b7c1-a810397f2486",
+      "name": "13. Send Response to PHP",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3b211340-457b-463d-a5fa-47e55df23d22",
+                    "leftValue": "={{ $json.action.toString().trim() }}",
+                    "rightValue": "send_selected",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "send_selected"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3d2aa1d6-e4d9-4e09-8e32-071a42660a0e",
+                    "leftValue": "={{ $json.action.toString().trim() }}",
+                    "rightValue": "send_event_all",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "send_all"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action.toString().trim() }}",
+                    "rightValue": "send_global_all",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "10ef9063-a966-414f-b6b9-0f7bbcd050b9"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "send_global_all"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -300,
+        20
+      ],
+      "id": "3d30efd1-654d-4d63-8285-9350d06de487",
+      "name": "Switch",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.action }}",
+              "value2": "send_selected"
+            }
+          ]
+        }
+      },
+      "id": "0e23bc8e-41f3-4bdd-9234-3f8eb0c5ea86",
+      "name": "6. Check if Image Exists1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        -540
+      ],
+      "alwaysOutputData": false,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.action }}",
+              "value2": "send_event_all"
+            }
+          ]
+        }
+      },
+      "id": "46fcf44d-258f-4a47-9bcf-016708c880e2",
+      "name": "6. Check if Image Exists2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1220,
+        -540
+      ],
+      "alwaysOutputData": false,
+      "disabled": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "1. Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "2. Process Webhook Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1b. Manual Test Trigger": {
+      "main": [
+        [
+          {
+            "node": "2. Process Webhook Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Process Webhook Data": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4a. Get All Pending Guests": {
+      "main": [
+        [
+          {
+            "node": "5. Prepare Invitation Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4b. Get Event Specific Guests": {
+      "main": [
+        [
+          {
+            "node": "5. Prepare Invitation Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4c. Get Selected Guests": {
+      "main": [
+        [
+          {
+            "node": "5. Prepare Invitation Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5. Prepare Invitation Messages": {
+      "main": [
+        [
+          {
+            "node": "6. Check if Image Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6. Check if Image Exists": {
+      "main": [
+        [
+          {
+            "node": "7a. Send WhatsApp with Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "7b. Send WhatsApp Text Only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7a. Send WhatsApp with Image": {
+      "main": [
+        [
+          {
+            "node": "8. Delay Between Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7b. Send WhatsApp Text Only": {
+      "main": [
+        [
+          {
+            "node": "8. Delay Between Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "8. Delay Between Messages": {
+      "main": [
+        [
+          {
+            "node": "9. Process Send Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "9. Process Send Result": {
+      "main": [
+        [
+          {
+            "node": "10. Update Send Log in Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "10. Update Send Log in Database": {
+      "main": [
+        [
+          {
+            "node": "11. Aggregate All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "11. Aggregate All Results": {
+      "main": [
+        [
+          {
+            "node": "12. Generate Final Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "12. Generate Final Report": {
+      "main": [
+        [
+          {
+            "node": "13. Send Response to PHP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "4c. Get Selected Guests",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "4b. Get Event Specific Guests",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "4a. Get All Pending Guests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6. Check if Image Exists1": {
+      "main": [
+        [],
+        []
+      ]
+    },
+    "6. Check if Image Exists2": {
+      "main": [
+        [],
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8083a08c-601e-4c11-895d-f734905ee14d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ce7daeb9c2f91132081b0638c79eb9a8cd3df269edbdc0e9a9488d16112e48f0"
+  },
+  "id": "lzfM0tDgGM1nLPxm",
+  "tags": []
+}

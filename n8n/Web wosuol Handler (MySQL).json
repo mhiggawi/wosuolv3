@@ -1,0 +1,115 @@
+{
+  "name": "Web RSVP Handler (MySQL)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "confirm-rsvp-qr",
+        "responseMode": "lastNode",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "webhook-trigger",
+      "name": "1. استلام طلب تأكيد الحضور",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -280,
+        80
+      ],
+      "webhookId": "your-unique-webhook-id-here"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = [];\nfor (const item of $input.all()) {\n  // البيانات الآن تأتي من ملف api_rsvp_handler.php\n  const guestId = item.json.body.guest_id;\n  const phoneNumber = item.json.body.phone_number;\n\n  // رابط QR Code يستخدم المعرف القصير\n  const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(guestId)}`;\n\n  // رسالة التأكيد\n  const qrCodeCaption = `تم تأكيد حضورك بنجاح!\\n\\nهذه بطاقة دخولك الشخصية.\\nيرجى إبراز الكود للدخول.`;\n\n  items.push({\n    json: {\n      phoneNumber: phoneNumber,\n      qrCodeImageUrl: qrCodeImageUrl,\n      qrCodeCaption: qrCodeCaption\n    }\n  });\n}\nreturn items;"
+      },
+      "name": "2. تجهيز رسالة QR Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        80
+      ],
+      "id": "prepare-message-code"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ultramsg.com/instanceXXXXX/messages/image",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "your_ultramsg_token"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "to",
+              "value": "={{$json.phoneNumber}}"
+            },
+            {
+              "name": "image",
+              "value": "={{$json.qrCodeImageUrl}}"
+            },
+            {
+              "name": "caption",
+              "value": "={{$json.qrCodeCaption}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "3. إرسال واتساب (QR Code)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        80
+      ],
+      "id": "send-whatsapp-http"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "1. استلام طلب تأكيد الحضور": {
+      "main": [
+        [
+          {
+            "node": "2. تجهيز رسالة QR Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. تجهيز رسالة QR Code": {
+      "main": [
+        [
+          {
+            "node": "3. إرسال واتساب (QR Code)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "some-version-id",
+  "id": "rsvp-handler-workflow"
+}
